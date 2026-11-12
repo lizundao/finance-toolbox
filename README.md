@@ -27,7 +27,7 @@
 
 ## 当前状态
 
-**v0.1.0** — 规划内核心功能已全部完成（阶段 0～5）。
+**v0.1.0** — 规划内功能与发布打包已全部完成。
 
 已上线：人民币大写、大写反查、支票日期、金额格式化、价税分离、日期差/账期/利息、月历与节假日、贷款试算、直线折旧、比例分摊、工资个税、身份证/银行卡校验。
 
@@ -51,12 +51,14 @@ npm run release            # 编译 NSIS 安装包 + exe
 npm run release:portable   # 上述 + 整理 release/ 目录与便携 zip
 ```
 
-发布产物位于 `release/`：
+本地发布产物位于 `release/`，统一使用 ASCII 命名：
 
 | 路径 | 说明 |
 |------|------|
-| `release/财务工具箱-0.1.0-win64/` | 安装包 + 文档 |
-| `release/财务工具箱-0.1.0-便携版.zip` | 绿色便携版 |
+| `release/FinanceToolbox-0.1.0-setup-win-x64.exe` | Windows 安装版 |
+| `release/FinanceToolbox-0.1.0-portable-win-x64.zip` | Windows 绿色便携版（含文档与 LICENSE） |
+
+macOS（`FinanceToolbox-0.1.0-aarch64.dmg` / `-aarch64.app.zip`）由 GitHub Actions 构建：手动触发工作流，或推送 `v*` tag 自动构建并生成草稿 Release。详见 [发布说明](docs/发布说明.md)。
 
 ## 项目结构（规划）
 

@@ -1,0 +1,19 @@
+[package]
+name = "finance-toolbox"
+version = "0.1.0"
+description = "Offline finance utilities desktop app"
+edition = "2021"
+
+[lib]
+name = "finance_toolbox_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = ["codegen"] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]

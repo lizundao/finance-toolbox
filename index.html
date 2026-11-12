@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>财务工具箱</title>
+    <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+    <script src="/theme-init.js"></script>
+    <link rel="stylesheet" href="/css/app.css" />
+  </head>
+  <body>
+    <div class="app-frame">
+      <header class="titlebar" data-tauri-drag-region>
+        <img src="/logo.svg" alt="" class="titlebar-logo" width="18" height="18" data-tauri-drag-region />
+        <span class="titlebar-name" data-tauri-drag-region data-i18n="appName">财务工具箱</span>
+        <nav class="menubar" id="menubar">
+          <div class="menu-root">
+            <button type="button" class="menu-trigger" aria-haspopup="true" data-i18n="menuTools">工具</button>
+            <div class="menu-popup" hidden>
+              <button type="button" data-view="home" data-i18n="navHome">首页</button>
+              <button type="button" data-view="rmb" data-i18n="navRmb">人民币大写</button>
+              <button type="button" data-view="rmb-reverse" data-i18n="navRmbReverse">大写反查</button>
+              <button type="button" data-view="check-date" data-i18n="navCheckDate">支票日期大写</button>
+              <button type="button" data-view="format" data-i18n="navFormat">金额格式化</button>
+              <button type="button" data-view="tax" data-i18n="navTax">价税分离</button>
+              <button type="button" data-view="date-calc" data-i18n="navDateCalc">日期计算</button>
+              <button type="button" data-view="calendar" data-i18n="navCalendar">日历</button>
+              <button type="button" data-view="interest" data-i18n="navInterest">利息计算</button>
+              <button type="button" data-view="loan" data-i18n="navLoan">贷款试算</button>
+              <button type="button" data-view="depreciation" data-i18n="navDepreciation">直线折旧</button>
+              <button type="button" data-view="allocate" data-i18n="navAllocate">比例分摊</button>
+              <button type="button" data-view="iit" data-i18n="navIit">工资个税</button>
+              <button type="button" data-view="validate" data-i18n="navValidate">证件校验</button>
+              <button type="button" data-view="settings" data-i18n="navSettings">设置</button>
+            </div>
+          </div>
+          <div class="menu-root">
+            <button type="button" class="menu-trigger" aria-haspopup="true" data-i18n="menuHelp">帮助</button>
+            <div class="menu-popup" hidden>
+              <button type="button" data-view="settings" data-i18n="navSettings">设置</button>
+              <button type="button" data-view="about" data-i18n="navAbout">关于</button>
+              <button type="button" data-view="license" data-i18n="navLicense">许可证</button>
+            </div>
+          </div>
+          <div class="menu-root">
+            <button type="button" class="menu-trigger" aria-haspopup="true" data-i18n="menuFile">文件</button>
+            <div class="menu-popup" hidden>
+              <button type="button" id="menuQuit" data-i18n="menuQuit">退出</button>
+            </div>
+          </div>
+        </nav>
+        <div class="titlebar-drag" data-tauri-drag-region aria-hidden="true"></div>
+        <div class="window-controls">
+          <button type="button" class="win-btn" id="winMinimize" data-i18n-title="winMinimize" data-i18n-aria="winMinimize" title="最小化" aria-label="最小化">─</button>
+          <button type="button" class="win-btn" id="winMaximize" data-i18n-title="winMaximize" data-i18n-aria="winMaximize" title="最大化" aria-label="最大化">□</button>
+          <button type="button" class="win-btn win-btn-close" id="winClose" data-i18n-title="winClose" data-i18n-aria="winClose" title="关闭" aria-label="关闭">✕</button>
+        </div>
+      </header>
+
+      <div class="shell">
+        <aside class="sidebar">
+          <div class="sidebar-brand">
+            <img src="/logo.svg" alt="" class="sidebar-logo" width="32" height="32" />
+            <div class="sidebar-brand-text">
+              <h1 data-i18n="appName">财务工具箱</h1>
+            </div>
+            <button type="button" class="theme-toggle sidebar-theme" id="themeToggle" title="切换主题" aria-label="切换主题">
+              <span class="theme-toggle-icon">☀</span>
+            </button>
+          </div>
+          <nav>
+            <div class="nav-group-label" data-i18n="navGroupTools">工具</div>
+            <button type="button" class="nav-item active" data-view="home">
+              <span class="nav-icon">⌂</span> <span data-i18n="navHome">首页</span>
+            </button>
+            <button type="button" class="nav-item" data-view="rmb">
+              <span class="nav-icon">¥</span> <span data-i18n="navRmb">人民币大写</span>
+            </button>
+            <button type="button" class="nav-item" data-view="rmb-reverse">
+              <span class="nav-icon">⇄</span> <span data-i18n="navRmbReverse">大写反查</span>
+            </button>
+            <button type="button" class="nav-item" data-view="check-date">
+              <span class="nav-icon">📅</span> <span data-i18n="navCheckDate">支票日期大写</span>
+            </button>
+            <button type="button" class="nav-item" data-view="format">
+              <span class="nav-icon">#</span> <span data-i18n="navFormat">金额格式化</span>
+            </button>
+            <button type="button" class="nav-item" data-view="tax">
+              <span class="nav-icon">％</span> <span data-i18n="navTax">价税分离</span>
+            </button>
+            <button type="button" class="nav-item" data-view="date-calc">
+              <span class="nav-icon">📆</span> <span data-i18n="navDateCalc">日期计算</span>
+            </button>
+            <button type="button" class="nav-item" data-view="calendar">
+              <span class="nav-icon">🗓</span> <span data-i18n="navCalendar">日历</span>
+            </button>
+            <button type="button" class="nav-item" data-view="interest">
+              <span class="nav-icon">∑</span> <span data-i18n="navInterest">利息计算</span>
+            </button>
+            <button type="button" class="nav-item" data-view="loan">
+              <span class="nav-icon">🏦</span> <span data-i18n="navLoan">贷款试算</span>
+            </button>
+            <button type="button" class="nav-item" data-view="depreciation">
+              <span class="nav-icon">📉</span> <span data-i18n="navDepreciation">直线折旧</span>
+            </button>
+            <button type="button" class="nav-item" data-view="allocate">
+              <span class="nav-icon">⎘</span> <span data-i18n="navAllocate">比例分摊</span>
+            </button>
+            <button type="button" class="nav-item" data-view="iit">
+              <span class="nav-icon">🧾</span> <span data-i18n="navIit">工资个税</span>
+            </button>
+            <button type="button" class="nav-item" data-view="validate">
+              <span class="nav-icon">✓</span> <span data-i18n="navValidate">证件校验</span>
+            </button>
+            <div class="nav-group-label" data-i18n="navGroupAbout">关于</div>
+            <button type="button" class="nav-item" data-view="settings">
+              <span class="nav-icon">⚙</span> <span data-i18n="navSettings">设置</span>
+            </button>
+            <button type="button" class="nav-item" data-view="about">
+              <span class="nav-icon">ⓘ</span> <span data-i18n="navAbout">关于</span>
+            </button>
+            <button type="button" class="nav-item" data-view="license">
+              <span class="nav-icon">📄</span> <span data-i18n="navLicense">许可证</span>
+            </button>
+          </nav>
+          <div class="sidebar-bottom">
+            <div class="sidebar-locale">
+              <label for="localeSelect" data-i18n="language">语言</label>
+              <select id="localeSelect" aria-label="Language">
+                <option value="zh" data-i18n="langZh">中文</option>
+                <option value="en" data-i18n="langEn">English</option>
+              </select>
+            </div>
+            <div class="sidebar-footer" data-i18n="sidebarFooter">v0.1.0 · 墨点 inkdot</div>
+          </div>
+        </aside>
+
+        <main class="main">
+          <section class="view active" id="view-home">
+            <div class="view-header">
+              <h2 data-i18n="homeTitle">选择工具</h2>
+              <p data-i18n="homeSubtitle">离线财务小工具，输入即得结果，支持一键复制</p>
+            </div>
+            <div class="tool-grid">
+              <div class="tool-card" data-goto="rmb">
+                <div class="icon">¥</div>
+                <h3 data-i18n="homeRmbTitle">人民币大写</h3>
+                <p data-i18n="homeRmbDesc">数字金额转壹贰叁…圆角分整</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+              <div class="tool-card" data-goto="rmb-reverse">
+                <div class="icon">⇄</div>
+                <h3 data-i18n="homeRmbRevTitle">大写反查</h3>
+                <p data-i18n="homeRmbRevDesc">大写金额转数字，核对凭证</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+              <div class="tool-card" data-goto="check-date">
+                <div class="icon">📅</div>
+                <h3 data-i18n="homeCheckDateTitle">支票日期大写</h3>
+                <p data-i18n="homeCheckDateDesc">日期转贰零贰陆年…月…日</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+              <div class="tool-card" data-goto="format">
+                <div class="icon">#</div>
+                <h3 data-i18n="homeFormatTitle">金额格式化</h3>
+                <p data-i18n="homeFormatDesc">千分位、批量转换、大写批量</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+              <div class="tool-card" data-goto="tax">
+                <div class="icon">％</div>
+                <h3 data-i18n="homeTaxTitle">价税分离</h3>
+                <p data-i18n="homeTaxDesc">含税价 ↔ 不含税价、税额</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+              <div class="tool-card" data-goto="date-calc">
+                <div class="icon">📆</div>
+                <h3 data-i18n="homeDateCalcTitle">日期计算</h3>
+                <p data-i18n="homeDateCalcDesc">日期差、账期到期日</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+              <div class="tool-card" data-goto="calendar">
+                <div class="icon">🗓</div>
+                <h3 data-i18n="homeCalendarTitle">日历</h3>
+                <p data-i18n="homeCalendarDesc">公历农历、法定节假日</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+              <div class="tool-card" data-goto="interest">
+                <div class="icon">∑</div>
+                <h3 data-i18n="homeInterestTitle">利息计算</h3>
+                <p data-i18n="homeInterestDesc">本金 × 利率 × 天数 / 360|365</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+              <div class="tool-card" data-goto="loan">
+                <div class="icon">🏦</div>
+                <h3 data-i18n="homeLoanTitle">贷款试算</h3>
+                <p data-i18n="homeLoanDesc">等额本息 / 等额本金还款计划</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+              <div class="tool-card" data-goto="depreciation">
+                <div class="icon">📉</div>
+                <h3 data-i18n="homeDeprTitle">直线折旧</h3>
+                <p data-i18n="homeDeprDesc">原值、残值、年限 → 折旧额</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+              <div class="tool-card" data-goto="allocate">
+                <div class="icon">⎘</div>
+                <h3 data-i18n="homeAllocTitle">比例分摊</h3>
+                <p data-i18n="homeAllocDesc">按权重分摊总额，尾差自动调整</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+              <div class="tool-card" data-goto="iit">
+                <div class="icon">🧾</div>
+                <h3 data-i18n="homeIitTitle">工资个税</h3>
+                <p data-i18n="homeIitDesc">累计预扣法试算</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+              <div class="tool-card" data-goto="validate">
+                <div class="icon">✓</div>
+                <h3 data-i18n="homeValidateTitle">证件校验</h3>
+                <p data-i18n="homeValidateDesc">身份证、银行卡号格式校验</p>
+                <span class="badge" data-i18n="badgeAvailable">可用</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="view" id="view-rmb">
+            <div class="view-header">
+              <h2 data-i18n="rmbTitle">人民币大写</h2>
+              <p data-i18n="rmbSubtitle">将阿拉伯数字金额转换为标准财务大写</p>
+            </div>
+            <section class="card">
+              <label class="field">
+                <span data-i18n="rmbAmount">金额</span>
+                <input type="text" id="rmbInput" data-i18n-placeholder="rmbAmountPh" placeholder="例如 1234.56 或 -100.00" autocomplete="off" />
+              </label>
+              <p class="hint" data-i18n="rmbHint">支持负数、千分位逗号；Enter 计算，Esc 清空</p>
+              <div class="actions">
+                <button type="button" class="btn" id="rmbCalc" data-i18n="rmbCalc">计算</button>
+                <button type="button" class="btn btn-secondary" id="rmbCopy" data-i18n="rmbCopy">复制结果</button>
+                <button type="button" class="btn btn-secondary" id="rmbClear" data-i18n="rmbClear">清空</button>
+              </div>
+            </section>
+            <section class="card finance-result-card">
+              <h3 class="card-section-title" data-i18n="rmbResult">大写金额</h3>
+              <div class="finance-result" id="rmbResult" aria-live="polite"></div>
+              <p class="finance-error" id="rmbError" hidden></p>
+            </section>
+          </section>
+
+          <section class="view" id="view-rmb-reverse">
+            <div class="view-header">
+              <h2 data-i18n="rmbRevTitle">大写反查</h2>
+              <p data-i18n="rmbRevSubtitle">将大写金额转换为数字，可与左侧金额核对</p>
+            </div>
+            <section class="card">
+              <label class="field">
+                <span data-i18n="rmbRevCompare">对照金额（可选）</span>
+                <input type="text" id="rmbRevAmount" data-i18n-placeholder="rmbRevComparePh" placeholder="阿拉伯数字，用于核对" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="rmbRevInput">大写金额</span>
+                <input type="text" id="rmbRevInput" data-i18n-placeholder="rmbRevInputPh" placeholder="例如 壹仟贰佰叁拾肆圆伍角陆分" autocomplete="off" />
+              </label>
+              <div class="actions">
+                <button type="button" class="btn" id="rmbRevCalc" data-i18n="rmbRevCalc">反查</button>
+                <button type="button" class="btn btn-secondary" id="rmbRevSuggest" data-i18n="rmbRevSuggest">由金额生成大写</button>
+                <button type="button" class="btn btn-secondary" id="rmbRevCopy" data-i18n="rmbRevCopy">复制数字</button>
+                <button type="button" class="btn btn-secondary" id="rmbRevClear" data-i18n="rmbClear">清空</button>
+              </div>
+            </section>
+            <section class="card finance-result-card">
+              <h3 class="card-section-title" data-i18n="rmbRevResult">数字金额</h3>
+              <div class="finance-result" id="rmbRevResult" aria-live="polite"></div>
+              <p class="finance-verify" id="rmbRevVerify" hidden></p>
+              <p class="finance-error" id="rmbRevError" hidden></p>
+            </section>
+          </section>
+
+          <section class="view" id="view-check-date">
+            <div class="view-header">
+              <h2 data-i18n="checkDateTitle">支票日期大写</h2>
+              <p data-i18n="checkDateSubtitle">将日期转换为支票用中文大写日期</p>
+            </div>
+            <section class="card">
+              <label class="field">
+                <span data-i18n="checkDateInput">日期</span>
+                <input type="text" id="checkDateInput" data-date-picker data-i18n-placeholder="checkDatePh" placeholder="2026-06-12" autocomplete="off" />
+              </label>
+              <p class="hint" data-i18n="checkDateHint">支持 2026-06-12、2026/6/12、2026年6月12日</p>
+              <div class="actions">
+                <button type="button" class="btn" id="checkDateCalc" data-i18n="checkDateCalc">转换</button>
+                <button type="button" class="btn btn-secondary" id="checkDateToday" data-i18n="checkDateToday">今天</button>
+                <button type="button" class="btn btn-secondary" id="checkDateCopy" data-i18n="checkDateCopy">复制结果</button>
+                <button type="button" class="btn btn-secondary" id="checkDateClear" data-i18n="checkDateClear">清空</button>
+              </div>
+            </section>
+            <section class="card finance-result-card">
+              <h3 class="card-section-title" data-i18n="checkDateResult">大写日期</h3>
+              <div class="finance-result" id="checkDateResult" aria-live="polite"></div>
+              <p class="finance-error" id="checkDateError" hidden></p>
+            </section>
+          </section>
+
+          <section class="view" id="view-format">
+            <div class="view-header">
+              <h2 data-i18n="formatTitle">金额格式化</h2>
+              <p data-i18n="formatSubtitle">千分位、去千分位、批量处理</p>
+            </div>
+            <input type="hidden" id="formatMode" value="single" />
+            <div class="tabs">
+              <button type="button" class="tab active" data-format-mode="thousands" data-i18n="formatThousands">千分位</button>
+              <button type="button" class="tab" data-format-mode="strip" data-i18n="formatStrip">去千分位</button>
+              <button type="button" class="tab" data-format-mode="batch" data-i18n="formatBatch">批量</button>
+            </div>
+            <section class="card" id="formatSingle">
+              <label class="field">
+                <span data-i18n="formatDigits">小数位数</span>
+                <select id="formatDigits">
+                  <option value="0" data-i18n="formatDigits0">0 位</option>
+                  <option value="2" selected data-i18n="formatDigits2">2 位</option>
+                  <option value="4" data-i18n="formatDigits4">4 位</option>
+                </select>
+              </label>
+              <label class="field">
+                <span data-i18n="formatNumber">数字</span>
+                <input type="text" id="formatInput" data-i18n-placeholder="formatNumberPh" placeholder="1234567.89" autocomplete="off" />
+              </label>
+              <div class="actions">
+                <button type="button" class="btn" id="formatCalc" data-i18n="formatConvert">转换</button>
+                <button type="button" class="btn btn-secondary" id="formatCopy" data-i18n="formatCopy">复制</button>
+                <button type="button" class="btn btn-secondary" id="formatClear" data-i18n="formatClear">清空</button>
+              </div>
+            </section>
+            <section class="card" id="formatBatch" hidden>
+              <label class="field">
+                <span data-i18n="formatBatchMode">批量模式</span>
+                <select id="formatBatchMode">
+                  <option value="thousands" data-i18n="formatBatchThousands">千分位</option>
+                  <option value="rmb" data-i18n="formatBatchRmb">人民币大写</option>
+                </select>
+              </label>
+              <label class="field">
+                <span data-i18n="formatBatchInput">每行一个数字（可从 Excel 粘贴）</span>
+                <textarea id="formatBatchInput" rows="8" placeholder="1000&#10;1234.56&#10;…"></textarea>
+              </label>
+              <div class="actions">
+                <button type="button" class="btn" id="formatBatchCalc" data-i18n="formatBatchCalc">批量转换</button>
+                <button type="button" class="btn btn-secondary" id="formatBatchCopy" data-i18n="formatBatchCopy">复制结果列</button>
+              </div>
+              <div class="finance-batch-wrap" id="formatBatchTable" hidden>
+                <table class="finance-batch-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="formatBatchColLine">行</th>
+                      <th data-i18n="formatBatchColInput">输入</th>
+                      <th data-i18n="formatBatchColResult">结果</th>
+                    </tr>
+                  </thead>
+                  <tbody id="formatBatchBody"></tbody>
+                </table>
+              </div>
+            </section>
+            <section class="card finance-result-card" id="formatResultCard">
+              <h3 class="card-section-title" data-i18n="formatResult">结果</h3>
+              <div class="finance-result" id="formatResult" aria-live="polite"></div>
+              <p class="finance-error" id="formatError" hidden></p>
+            </section>
+          </section>
+
+          <section class="view" id="view-tax">
+            <div class="view-header">
+              <h2 data-i18n="taxTitle">价税分离</h2>
+              <p><span data-i18n="taxSubtitle">含税价、不含税价与税额计算</span> · <span id="taxRateVersion">税率版本：2026</span></p>
+            </div>
+            <div class="tabs">
+              <button type="button" class="tab active" data-tax-tab="single" data-i18n="taxTabSingle">单笔</button>
+              <button type="button" class="tab" data-tax-tab="batch" data-i18n="taxTabBatch">批量</button>
+            </div>
+            <section class="card">
+              <div class="tabs tax-mode-tabs">
+                <button type="button" class="tab active" data-tax-mode="inclusive" data-i18n="taxModeInclusive">已知含税价</button>
+                <button type="button" class="tab" data-tax-mode="exclusive" data-i18n="taxModeExclusive">已知不含税价</button>
+              </div>
+              <label class="field">
+                <span data-i18n="taxRate">税率</span>
+                <select id="taxRateSelect"></select>
+              </label>
+              <label class="field" id="taxCustomRateField" hidden>
+                <span data-i18n="taxCustomRate">自定义税率</span>
+                <input type="text" id="taxCustomRate" data-i18n-placeholder="taxCustomRatePh" placeholder="如 13 或 13%" autocomplete="off" />
+              </label>
+            </section>
+            <section class="card" id="taxSingle">
+              <label class="field">
+                <span id="taxAmountLabel" data-i18n="taxAmountInclusive">含税金额</span>
+                <input type="text" id="taxAmount" data-i18n-placeholder="taxAmountPhIncl" placeholder="例如 1130.00" autocomplete="off" />
+              </label>
+              <p class="hint" data-i18n="taxHint">Enter 计算；结果保留两位小数</p>
+              <div class="actions">
+                <button type="button" class="btn" id="taxCalc" data-i18n="taxCalc">计算</button>
+                <button type="button" class="btn btn-secondary" id="taxCopyAll" data-i18n="taxCopyAll">复制全部</button>
+                <button type="button" class="btn btn-secondary" id="taxCopyExcl" data-i18n="taxCopyExcl">复制不含税</button>
+                <button type="button" class="btn btn-secondary" id="taxCopyTax" data-i18n="taxCopyTax">复制税额</button>
+                <button type="button" class="btn btn-secondary" id="taxCopyIncl" data-i18n="taxCopyIncl">复制含税</button>
+                <button type="button" class="btn btn-secondary" id="taxClear" data-i18n="taxClear">清空</button>
+              </div>
+            </section>
+            <section class="card" id="taxBatch" hidden>
+              <label class="field">
+                <span data-i18n="taxBatchInput">每行一条（可从 Excel 粘贴）</span>
+                <textarea id="taxBatchInput" rows="8" placeholder="1130&#10;1000,6%&#10;2000	13%"></textarea>
+              </label>
+              <p class="hint" data-i18n="taxBatchHint">格式：金额 或 金额,税率；未写税率时使用上方所选默认税率</p>
+              <div class="actions">
+                <button type="button" class="btn" id="taxBatchCalc" data-i18n="taxBatchCalc">批量计算</button>
+                <button type="button" class="btn btn-secondary" id="taxBatchCopy" data-i18n="taxBatchCopy">复制为 TSV</button>
+              </div>
+              <div class="finance-batch-wrap" id="taxBatchTable" hidden>
+                <table class="finance-batch-table">
+                  <thead>
+                    <tr>
+                      <th data-i18n="taxColLine">行</th>
+                      <th data-i18n="taxColInput">输入</th>
+                      <th data-i18n="taxColExcl">不含税</th>
+                      <th data-i18n="taxColTax">税额</th>
+                      <th data-i18n="taxColIncl">含税</th>
+                      <th data-i18n="taxColRate">税率</th>
+                    </tr>
+                  </thead>
+                  <tbody id="taxBatchBody"></tbody>
+                </table>
+              </div>
+            </section>
+            <section class="card finance-result-card" id="taxResultCard">
+              <h3 class="card-section-title" data-i18n="taxResult">计算结果</h3>
+              <dl class="meta-table" id="taxResultRows"></dl>
+              <p class="finance-error" id="taxError" hidden></p>
+            </section>
+          </section>
+
+          <section class="view" id="view-date-calc">
+            <div class="view-header">
+              <h2 data-i18n="dateCalcTitle">日期计算</h2>
+              <p>
+                <span data-i18n="dateCalcSubtitle">自然日 / 工作日天数与账期到期</span>
+                ·
+                <button type="button" class="link-btn" data-goto="calendar" id="dateHolidayVersion" data-holiday-version>法定节假日</button>
+              </p>
+            </div>
+            <div class="tabs">
+              <button type="button" class="tab active" data-date-tab="diff" data-i18n="dateTabDiff">日期差</button>
+              <button type="button" class="tab" data-date-tab="due" data-i18n="dateTabDue">账期</button>
+            </div>
+            <section class="card" id="dateDiffPanel">
+              <label class="field">
+                <span data-i18n="dateDiffStart">起始日期</span>
+                <input type="text" id="dateDiffStart" data-date-picker data-i18n-placeholder="checkDatePh" placeholder="2026-06-12" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="dateDiffEnd">结束日期</span>
+                <input type="text" id="dateDiffEnd" data-date-picker data-i18n-placeholder="checkDatePh" placeholder="2026-06-12" autocomplete="off" />
+              </label>
+              <div class="actions">
+                <button type="button" class="btn" id="dateDiffCalc" data-i18n="dateDiffCalc">计算</button>
+              </div>
+            </section>
+            <section class="card finance-result-card" id="dateDiffResultCard">
+              <h3 class="card-section-title" data-i18n="dateDiffResult">计算结果</h3>
+              <dl class="meta-table" id="dateDiffResultRows"></dl>
+              <p class="finance-error" id="dateDiffError" hidden></p>
+            </section>
+            <section class="card" id="dateDuePanel" hidden>
+              <label class="field">
+                <span data-i18n="dateDueStart">起始日期</span>
+                <input type="text" id="dateDueStart" data-date-picker data-i18n-placeholder="checkDatePh" placeholder="2026-06-12" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="dateDueDays">账期天数</span>
+                <input type="text" id="dateDueDays" data-i18n-placeholder="dateDueDaysPh" placeholder="如 30" autocomplete="off" />
+              </label>
+              <div class="tabs tax-mode-tabs">
+                <button type="button" class="tab active" data-due-mode="natural" data-i18n="dateDueModeNatural">自然日</button>
+                <button type="button" class="tab" data-due-mode="work" data-i18n="dateDueModeWork">工作日</button>
+              </div>
+              <div class="actions">
+                <button type="button" class="btn" id="dateDueCalc" data-i18n="dateDueCalc">计算到期日</button>
+                <button type="button" class="btn btn-secondary" id="dateDueCopy" data-i18n="dateDueCopy">复制到期日</button>
+              </div>
+            </section>
+            <section class="card finance-result-card" id="dateDueResultCard" hidden>
+              <h3 class="card-section-title" data-i18n="dateDueResult">到期日</h3>
+              <dl class="meta-table" id="dateDueResultRows"></dl>
+              <p class="finance-error" id="dateDueError" hidden></p>
+            </section>
+          </section>
+
+          <section class="view" id="view-interest">
+            <div class="view-header">
+              <h2 data-i18n="interestTitle">利息计算</h2>
+              <p data-i18n="interestSubtitle">简单利息：本金 × 年利率 × 天数 ÷ 计息基数</p>
+            </div>
+            <section class="card">
+              <label class="field">
+                <span data-i18n="intPrincipal">本金</span>
+                <input type="text" id="interestPrincipal" data-i18n-placeholder="intPrincipalPh" placeholder="如 100000" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="intRate">年利率</span>
+                <input type="text" id="interestRate" data-i18n-placeholder="intRatePh" placeholder="如 5 或 5%" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="intBasis">计息基数</span>
+                <select id="interestBasis">
+                  <option value="365" data-i18n="intBasis365">365 天</option>
+                  <option value="360" data-i18n="intBasis360">360 天</option>
+                </select>
+              </label>
+              <div class="tabs tax-mode-tabs">
+                <button type="button" class="tab active" data-int-days-mode="manual" data-i18n="intDaysModeManual">输入天数</button>
+                <button type="button" class="tab" data-int-days-mode="range" data-i18n="intDaysModeRange">日期区间</button>
+              </div>
+              <div id="interestDaysManual">
+                <label class="field">
+                  <span data-i18n="intDays">计息天数</span>
+                  <input type="text" id="interestDays" data-i18n-placeholder="intDaysPh" placeholder="如 90" autocomplete="off" />
+                </label>
+              </div>
+              <div id="interestDaysRange" hidden>
+                <label class="field">
+                  <span data-i18n="intStart">起始日</span>
+                  <input type="text" id="interestStart" data-date-picker data-i18n-placeholder="checkDatePh" placeholder="2026-06-12" autocomplete="off" />
+                </label>
+                <label class="field">
+                  <span data-i18n="intEnd">结束日</span>
+                  <input type="text" id="interestEnd" data-date-picker data-i18n-placeholder="checkDatePh" placeholder="2026-09-12" autocomplete="off" />
+                </label>
+              </div>
+              <div class="actions">
+                <button type="button" class="btn" id="interestCalc" data-i18n="intCalc">计算</button>
+                <button type="button" class="btn btn-secondary" id="interestCopy" data-i18n="intCopy">复制利息</button>
+                <button type="button" class="btn btn-secondary" id="interestClear" data-i18n="intClear">清空</button>
+              </div>
+            </section>
+            <section class="card finance-result-card">
+              <h3 class="card-section-title" data-i18n="intResult">计算结果</h3>
+              <dl class="meta-table" id="interestResultRows"></dl>
+              <p class="finance-error" id="interestError" hidden></p>
+            </section>
+          </section>
+
+          <section class="view" id="view-loan">
+            <div class="view-header">
+              <h2 data-i18n="loanTitle">贷款试算</h2>
+              <p data-i18n="loanSubtitle">等额本息 / 等额本金，含还款计划表</p>
+            </div>
+            <section class="card">
+              <div class="tabs tax-mode-tabs">
+                <button type="button" class="tab active" data-loan-mode="payment" data-i18n="loanModePayment">等额本息</button>
+                <button type="button" class="tab" data-loan-mode="principal" data-i18n="loanModePrincipal">等额本金</button>
+              </div>
+              <label class="field">
+                <span data-i18n="loanPrincipal">贷款本金</span>
+                <input type="text" id="loanPrincipal" data-i18n-placeholder="intPrincipalPh" placeholder="如 1000000" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="loanRate">年利率</span>
+                <input type="text" id="loanRate" data-i18n-placeholder="intRatePh" placeholder="如 4.2 或 4.2%" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="loanMonths">贷款期数（月）</span>
+                <input type="text" id="loanMonths" data-i18n-placeholder="loanMonthsPh" placeholder="如 360" autocomplete="off" />
+              </label>
+              <div class="actions">
+                <button type="button" class="btn" id="loanCalc" data-i18n="loanCalc">计算</button>
+                <button type="button" class="btn btn-secondary" id="loanCopyTsv" data-i18n="loanCopyTsv">复制计划表</button>
+                <button type="button" class="btn btn-secondary" id="loanClear" data-i18n="intClear">清空</button>
+              </div>
+            </section>
+            <section class="card finance-result-card">
+              <h3 class="card-section-title" data-i18n="loanSummary">试算摘要</h3>
+              <dl class="meta-table" id="loanSummaryRows"></dl>
+              <p class="finance-error" id="loanError" hidden></p>
+            </section>
+            <section class="card finance-result-card" id="loanScheduleCard" hidden>
+              <h3 class="card-section-title" data-i18n="loanSchedule">还款计划</h3>
+              <div class="finance-schedule-wrap">
+                <table class="finance-batch-table" id="loanScheduleTable">
+                  <thead>
+                    <tr>
+                      <th data-i18n="loanColPeriod">期数</th>
+                      <th data-i18n="loanColPayment">月供</th>
+                      <th data-i18n="loanColPrincipal">本金</th>
+                      <th data-i18n="loanColInterest">利息</th>
+                      <th data-i18n="loanColBalance">剩余本金</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+
+          <section class="view" id="view-depreciation">
+            <div class="view-header">
+              <h2 data-i18n="deprTitle">直线折旧</h2>
+              <p data-i18n="deprSubtitle">原值 − 残值，按使用年限平均分摊</p>
+            </div>
+            <section class="card">
+              <label class="field">
+                <span data-i18n="deprCost">资产原值</span>
+                <input type="text" id="deprCost" data-i18n-placeholder="intPrincipalPh" placeholder="如 120000" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="deprSalvage">预计残值</span>
+                <input type="text" id="deprSalvage" data-i18n-placeholder="deprSalvagePh" placeholder="如 5000，可留空" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="deprYears">使用年限（年）</span>
+                <input type="text" id="deprYears" data-i18n-placeholder="deprYearsPh" placeholder="如 5" autocomplete="off" />
+              </label>
+              <div class="actions">
+                <button type="button" class="btn" id="deprCalc" data-i18n="deprCalc">计算</button>
+                <button type="button" class="btn btn-secondary" id="deprCopy" data-i18n="deprCopy">复制折旧额</button>
+                <button type="button" class="btn btn-secondary" id="deprClear" data-i18n="intClear">清空</button>
+              </div>
+            </section>
+            <section class="card finance-result-card">
+              <h3 class="card-section-title" data-i18n="deprResult">计算结果</h3>
+              <dl class="meta-table" id="deprResultRows"></dl>
+              <p class="finance-error" id="deprError" hidden></p>
+            </section>
+            <section class="card finance-result-card" id="deprScheduleCard" hidden>
+              <h3 class="card-section-title" data-i18n="deprSchedule">折旧明细（按月）</h3>
+              <div class="finance-schedule-wrap">
+                <table class="finance-batch-table" id="deprScheduleTable">
+                  <thead>
+                    <tr>
+                      <th data-i18n="loanColPeriod">期数</th>
+                      <th data-i18n="deprColYear">年</th>
+                      <th data-i18n="deprColMonth">月</th>
+                      <th data-i18n="deprColAmount">折旧额</th>
+                      <th data-i18n="deprColAccum">累计折旧</th>
+                      <th data-i18n="deprColBook">账面净值</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+
+          <section class="view" id="view-allocate">
+            <div class="view-header">
+              <h2 data-i18n="allocTitle">比例分摊</h2>
+              <p data-i18n="allocSubtitle">按权重分摊总额，最后一项吸收尾差</p>
+            </div>
+            <section class="card">
+              <label class="field">
+                <span data-i18n="allocTotalLabel">待分摊总额</span>
+                <input type="text" id="allocTotal" data-i18n-placeholder="intPrincipalPh" placeholder="如 10000" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="allocWeights">权重（每行一个）</span>
+                <textarea id="allocWeights" rows="6" data-i18n-placeholder="allocWeightsPh" placeholder="如 3&#10;2&#10;1"></textarea>
+              </label>
+              <p class="hint" data-i18n="allocHint">可从 Excel 粘贴一列权重；分摊金额保留两位小数</p>
+              <div class="actions">
+                <button type="button" class="btn" id="allocCalc" data-i18n="allocCalc">计算</button>
+                <button type="button" class="btn btn-secondary" id="allocCopy" data-i18n="allocCopy">复制为 TSV</button>
+                <button type="button" class="btn btn-secondary" id="allocClear" data-i18n="intClear">清空</button>
+              </div>
+            </section>
+            <section class="card finance-result-card" id="allocResultCard" hidden>
+              <h3 class="card-section-title" data-i18n="allocResult">分摊结果</h3>
+              <table class="finance-batch-table" id="allocResultTable">
+                <thead>
+                  <tr>
+                    <th data-i18n="taxColLine">行</th>
+                    <th data-i18n="taxColInput">输入</th>
+                    <th data-i18n="allocColWeight">权重</th>
+                    <th data-i18n="allocColRatio">比例</th>
+                    <th data-i18n="allocColShare">分摊金额</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+              <p class="finance-error" id="allocError" hidden></p>
+            </section>
+          </section>
+
+          <section class="view" id="view-iit">
+            <div class="view-header">
+              <h2 data-i18n="iitTitle">工资个税</h2>
+              <p><span data-i18n="iitSubtitle">综合所得累计预扣预缴（假定每月收入与扣除相同）</span> · <span id="iitRateVersion">税率版本：2025</span></p>
+            </div>
+            <section class="card">
+              <label class="field">
+                <span data-i18n="iitMonth">当前月份</span>
+                <select id="iitMonth">
+                  <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                  <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+                  <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+                  <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                </select>
+              </label>
+              <label class="field">
+                <span data-i18n="iitGross">税前月工资</span>
+                <input type="text" id="iitGross" data-i18n-placeholder="intPrincipalPh" placeholder="如 15000" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="iitSocial">专项扣除（社保公积金等）</span>
+                <input type="text" id="iitSocial" data-i18n-placeholder="iitSocialPh" placeholder="如 2000，可留空" autocomplete="off" />
+              </label>
+              <label class="field">
+                <span data-i18n="iitAdditional">专项附加扣除</span>
+                <input type="text" id="iitAdditional" data-i18n-placeholder="iitAdditionalPh" placeholder="如 2000，可留空" autocomplete="off" />
+              </label>
+              <p class="hint" data-i18n="iitHint">含基本减除费用 5000 元/月；结果仅供参考，以税务机关为准</p>
+              <div class="actions">
+                <button type="button" class="btn" id="iitCalc" data-i18n="iitCalc">计算</button>
+                <button type="button" class="btn btn-secondary" id="iitCopy" data-i18n="iitCopy">复制结果</button>
+                <button type="button" class="btn btn-secondary" id="iitClear" data-i18n="intClear">清空</button>
+              </div>
+            </section>
+            <section class="card finance-result-card">
+              <h3 class="card-section-title" data-i18n="iitResult">计算结果</h3>
+              <dl class="meta-table" id="iitResultRows"></dl>
+              <p class="finance-error" id="iitError" hidden></p>
+            </section>
+          </section>
+
+          <section class="view" id="view-validate">
+            <div class="view-header">
+              <h2 data-i18n="valTitle">证件校验</h2>
+              <p data-i18n="valSubtitle">离线格式校验，不联网验真</p>
+            </div>
+            <div class="tabs">
+              <button type="button" class="tab active" data-val-tab="id" data-i18n="valTabId">身份证</button>
+              <button type="button" class="tab" data-val-tab="bank" data-i18n="valTabBank">银行卡</button>
+            </div>
+            <section class="card" id="validateIdPanel">
+              <label class="field">
+                <span data-i18n="valIdInput">身份证号码</span>
+                <input type="text" id="validateIdInput" data-i18n-placeholder="valIdPh" placeholder="18 位身份证号" autocomplete="off" spellcheck="false" />
+              </label>
+              <p class="hint" data-i18n="valIdHint">校验格式、出生日期与校验码</p>
+              <div class="actions">
+                <button type="button" class="btn" id="validateIdBtn" data-i18n="valCheck">校验</button>
+                <button type="button" class="btn btn-secondary" id="validateIdCopy" data-i18n="valCopy">复制号码</button>
+                <button type="button" class="btn btn-secondary" id="validateIdClear" data-i18n="intClear">清空</button>
+              </div>
+            </section>
+            <section class="card finance-result-card" id="validateIdResult">
+              <h3 class="card-section-title" data-i18n="valResult">校验结果</h3>
+              <dl class="meta-table" id="validateIdRows"></dl>
+              <p class="finance-error" id="validateIdError" hidden></p>
+            </section>
+            <section class="card" id="validateBankPanel" hidden>
+              <label class="field">
+                <span data-i18n="valBankInput">银行卡号</span>
+                <input type="text" id="validateBankInput" data-i18n-placeholder="valBankPh" placeholder="13–19 位卡号" autocomplete="off" spellcheck="false" />
+              </label>
+              <p class="hint" data-i18n="valBankHint">Luhn 算法校验，不验证银行归属</p>
+              <div class="actions">
+                <button type="button" class="btn" id="validateBankBtn" data-i18n="valCheck">校验</button>
+                <button type="button" class="btn btn-secondary" id="validateBankCopy" data-i18n="valCopy">复制卡号</button>
+                <button type="button" class="btn btn-secondary" id="validateBankClear" data-i18n="intClear">清空</button>
+              </div>
+            </section>
+            <section class="card finance-result-card" id="validateBankResult" hidden>
+              <h3 class="card-section-title" data-i18n="valResult">校验结果</h3>
+              <dl class="meta-table" id="validateBankRows"></dl>
+              <p class="finance-error" id="validateBankError" hidden></p>
+            </section>
+          </section>
+
+          <section class="view" id="view-calendar">
+            <div class="view-header">
+              <h2 data-i18n="calTitle">日历</h2>
+              <p>
+                <span data-i18n="calSubtitle">公历、农历与法定节假日</span>
+                ·
+                <button type="button" class="link-btn" data-goto="settings" data-i18n="calManageHolidays">管理节假日</button>
+              </p>
+            </div>
+            <div class="tyme-calendar-layout">
+              <section class="card tyme-calendar-main">
+                <div class="tyme-cal-toolbar">
+                  <button type="button" class="tyme-cal-nav" id="calendarPrev" aria-label="prev">‹</button>
+                  <div class="tyme-cal-title-wrap">
+                    <h3 class="tyme-cal-title" id="calendarTitle">2026年6月</h3>
+                    <button type="button" class="link-btn" id="calendarToday" data-i18n="calToday">今天</button>
+                  </div>
+                  <button type="button" class="tyme-cal-nav" id="calendarNext" aria-label="next">›</button>
+                </div>
+                <div class="tyme-cal-weekdays" id="calendarWeekdays"></div>
+                <div class="tyme-cal-grid tyme-cal-grid-page" id="calendarGrid"></div>
+                <div class="tyme-cal-legend">
+                  <span class="tyme-legend-item"><i class="tyme-legend-dot is-holiday"></i><span data-i18n="calLegendRest">休</span></span>
+                  <span class="tyme-legend-item"><i class="tyme-legend-dot is-adjust-work"></i><span data-i18n="calLegendWork">班</span></span>
+                  <span class="tyme-legend-item"><i class="tyme-legend-dot is-weekend"></i><span data-i18n="calLegendWeekend">周末</span></span>
+                </div>
+              </section>
+              <aside class="tyme-calendar-sidebar">
+                <section class="card tyme-calendar-detail">
+                  <h3 class="card-section-title" data-i18n="calDetailTitle">日期详情</h3>
+                  <div id="calendarDetailBody"></div>
+                </section>
+                <section class="card cal-reminder-card">
+                  <h3 class="card-section-title" data-i18n="calReminderTitle">节日提醒</h3>
+                  <div id="calendarReminderList" class="cal-reminder-list"></div>
+                </section>
+              </aside>
+            </div>
+          </section>
+
+          <section class="view" id="view-settings">
+            <div class="view-header">
+              <h2 data-i18n="settingsTitle">设置</h2>
+              <p data-i18n="settingsSubtitle">应用偏好与节假日数据</p>
+            </div>
+            <section class="card">
+              <h3 class="card-section-title" data-i18n="settingsHolidayTitle">法定节假日</h3>
+              <p class="hint" data-i18n-html="settingsHolidayIntro">工作日计算依据国务院放假安排（离线内置）。在 <button type="button" class="link-btn" data-goto="calendar">日历</button> 查看安排，或在下方可视化调整。</p>
+              <dl class="meta-table settings-holiday-meta">
+                <div class="meta-row">
+                  <dt data-i18n="settingsHolidaySourceLabel">数据来源</dt>
+                  <dd id="settingsHolidaySource">内置（2001–2026）</dd>
+                </div>
+                <div class="meta-row">
+                  <dt data-i18n="settingsHolidayStatusLabel">当前状态</dt>
+                  <dd id="settingsHolidayStatus">内置默认</dd>
+                </div>
+              </dl>
+              <div class="actions settings-holiday-actions">
+                <button type="button" class="btn" data-goto="calendar" data-i18n="settingsOpenCalendar">打开日历</button>
+                <button type="button" class="btn btn-secondary" id="settingsHolidayReset" data-i18n="settingsHolidayReset">恢复默认</button>
+              </div>
+            </section>
+            <section class="card">
+              <h3 class="card-section-title" data-i18n="settingsHolidayAdvanced">高级：自定义节假日</h3>
+              <p class="hint" data-i18n="settingsHolidayAdvancedHint">选择模式后点击日期：标记放假、调休上班，或清除自定义标记。</p>
+              <div class="tabs tax-mode-tabs settings-holiday-modes">
+                <button type="button" class="tab active" data-holiday-mode="rest" data-i18n="settingsHolidayModeRest">标记放假</button>
+                <button type="button" class="tab" data-holiday-mode="work" data-i18n="settingsHolidayModeWork">标记调休上班</button>
+                <button type="button" class="tab" data-holiday-mode="clear" data-i18n="settingsHolidayModeClear">清除标记</button>
+              </div>
+              <div class="tyme-cal-toolbar settings-holiday-toolbar">
+                <button type="button" class="tyme-cal-nav" id="settingsHolidayPrev" aria-label="prev">‹</button>
+                <div class="tyme-cal-title-wrap">
+                  <h3 class="tyme-cal-title" id="settingsHolidayTitle">2026年6月</h3>
+                  <button type="button" class="link-btn" id="settingsHolidayToday" data-i18n="calToday">今天</button>
+                </div>
+                <button type="button" class="tyme-cal-nav" id="settingsHolidayNext" aria-label="next">›</button>
+              </div>
+              <div class="tyme-cal-weekdays" id="settingsHolidayWeekdays"></div>
+              <div class="tyme-cal-grid tyme-cal-grid-edit" id="settingsHolidayGrid"></div>
+              <div class="tyme-cal-legend">
+                <span class="tyme-legend-item"><i class="tyme-legend-dot is-holiday"></i><span data-i18n="calLegendRest">放假</span></span>
+                <span class="tyme-legend-item"><i class="tyme-legend-dot is-adjust-work"></i><span data-i18n="calLegendWork">调休上班</span></span>
+                <span class="tyme-legend-item"><i class="tyme-legend-dot is-user-mark"></i><span data-i18n="settingsHolidayLegendCustom">自定义标记</span></span>
+              </div>
+            </section>
+          </section>
+
+          <section class="view" id="view-about">
+            <div class="view-header">
+              <h2 data-i18n="aboutTitle">关于</h2>
+              <p data-i18n="aboutSubtitle">版本信息、作者与使用引导</p>
+            </div>
+            <div class="free-banner">
+              <span class="free-banner-icon" aria-hidden="true">✓</span>
+              <div>
+                <strong data-i18n="freeBannerTitle">免费使用</strong>
+                <p data-i18n="freeBannerBody">无需付费、无需订阅、无需激活码，依据 MIT 开源许可提供。</p>
+              </div>
+            </div>
+            <section class="card about-card">
+              <h3 class="card-section-title" data-i18n="aboutCardTitle">ⓘ 关于</h3>
+              <div class="about-brand">
+                <div class="about-logo-wrap">
+                  <img src="/inkdot.png" data-i18n-aria="aboutLogoAlt" alt="墨点 inkdot 网站 Logo" class="about-logo" width="56" height="56" />
+                </div>
+                <div>
+                  <div class="about-brand-name" data-i18n="aboutBrandName">墨点 inkdot</div>
+                  <div class="about-brand-tagline" data-i18n="aboutBrandTagline">小工具，一点就够用 · inkdot.cn</div>
+                </div>
+              </div>
+              <dl class="meta-table">
+                <div class="meta-row">
+                  <dt data-i18n="metaAppName">应用名称</dt>
+                  <dd><span data-i18n="appName">财务工具箱</span> <span class="badge badge-free" data-i18n="tagFree">免费</span></dd>
+                </div>
+                <div class="meta-row">
+                  <dt data-i18n="metaVersion">版本</dt>
+                  <dd>0.1.0</dd>
+                </div>
+                <div class="meta-row">
+                  <dt data-i18n="metaBrand">品牌</dt>
+                  <dd data-i18n="metaBrandValue">墨点（inkdot）</dd>
+                </div>
+                <div class="meta-row">
+                  <dt data-i18n="metaAuthor">作者</dt>
+                  <dd data-i18n="metaAuthorValue">inkdot</dd>
+                </div>
+                <div class="meta-row">
+                  <dt data-i18n="metaWebsite">网址</dt>
+                  <dd><a class="ext-link" href="https://inkdot.cn" target="_blank" rel="noopener noreferrer" data-i18n="websiteLink">🔗 inkdot.cn</a></dd>
+                </div>
+                <div class="meta-row">
+                  <dt data-i18n="metaLicense">许可</dt>
+                  <dd>
+                    <span data-i18n="licenseMetaBefore">MIT 开源许可，详见</span>
+                    <button type="button" class="link-btn" data-goto="license" data-i18n="licenseMetaLink">「许可证」</button>
+                    <span data-i18n="licenseMetaAfter"></span>
+                  </dd>
+                </div>
+                <div class="meta-row">
+                  <dt data-i18n="metaPosition">定位</dt>
+                  <dd data-i18n="metaPositionValue">离线财务小工具桌面合集</dd>
+                </div>
+              </dl>
+            </section>
+          </section>
+
+          <section class="view" id="view-license">
+            <div class="view-header">
+              <h2 data-i18n="licenseTitle">许可证</h2>
+              <p data-i18n="licenseSubtitle">软件使用条款与开源许可</p>
+            </div>
+            <div class="free-banner">
+              <span class="free-banner-icon" aria-hidden="true">✓</span>
+              <div>
+                <strong data-i18n="licenseFreeTitle">免费使用</strong>
+                <p data-i18n="licenseFreeBody">财务工具箱可免费用于个人与商业场景，无需额外授权费用。</p>
+              </div>
+            </div>
+            <section class="card license-card">
+              <h3 class="card-section-title" data-i18n="licenseCardTitle">软件许可协议</h3>
+              <p class="license-intro" data-i18n="licenseIntro">财务工具箱由墨点（inkdot）发布，采用 MIT 开源许可。以下为中文参考译本，条款以根目录英文版 LICENSE 为准。</p>
+              <pre class="license-text" data-i18n="licenseText"></pre>
+            </section>
+            <section class="card">
+              <h3 class="card-section-title" data-i18n="licenseThirdPartyTitle">第三方组件</h3>
+              <p class="hint" data-i18n="licenseThirdPartyBody">本软件使用以下开源组件：Tauri、Vite、tyme4ts 等。各组件遵循其各自的开源许可证。</p>
+            </section>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+    <script type="module" src="/js/app.js"></script>
+  </body>
+</html>

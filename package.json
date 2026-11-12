@@ -1,0 +1,24 @@
+{
+  "name": "finance-toolbox",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "tauri": "tauri",
+    "icon": "tauri icon public/logo.svg",
+    "release": "npm run tauri build",
+    "release:dist": "node scripts/release-dist.mjs",
+    "release:portable": "npm run release && npm run release:dist"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2",
+    "tyme4ts": "^1.5.1"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2",
+    "vite": "^6"
+  }
+}
